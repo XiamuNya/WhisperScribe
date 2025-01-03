@@ -89,59 +89,44 @@ def setup_whisper():
         print("初次启动可能需要多等待一会，请耐心等待...")
         print("建议使用Chrome浏览器以获得最佳体验~")
         print("="*50 + "\n")
-        print("正在下载/加载模型，这可能需要几分钟时间，初次启动可能需要更长时间 ^ ^...")
         
-        # 设置 HuggingFace 镜像和缓存目录
+        print("正在从国内镜像下载模型，请稍候...")
+        
+        # 设置 HuggingFace 镜像
         os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
-        os.environ['HF_HOME'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+        os.environ['HF_MIRROR'] = 'https://hf-mirror.com'
         
         try:
-            # 首先尝试从本地加载
             model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                model_id, 
-                torch_dtype=torch_dtype,
-                low_cpu_mem_usage=True,
-                use_safetensors=True,
-                local_files_only=True
-            )
-            print("成功从本地加载模型！")
-        except Exception as e:
-            print("本地未找到模型，正在从镜像站下载...")
-            print("\n如果下载失败，您可以：")
-            print("1. 访问 https://hf-mirror.com/openai/whisper-small")
-            print("2. 下载以下文件:")
-            print("   - config.json")
-            print("   - generation_config.json")
-            print("   - model.safetensors")
-            print("   - tokenizer.json")
-            print("   - vocab.json")
-            print("3. 将文件放在 models/openai/whisper-small 目录下\n")
-            
-            # 从镜像站下载
-            model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                model_id, 
+                "openai/whisper-small",
                 torch_dtype=torch_dtype,
                 low_cpu_mem_usage=True,
                 use_safetensors=True,
                 local_files_only=False,
-                mirror='https://hf-mirror.com'
+                mirror='https://hf-mirror.com',
+                trust_remote_code=True
             )
-        
+            print("模型下载完成！")
+        except Exception as e:
+            print("\n模型下载失败，请检查网络连接")
+            print("详细错误信息：", str(e))
+            raise e
+
         model.to(device)
 
         try:
-            processor = AutoProcessor.from_pretrained(
-                model_id,
-                local_files_only=True
-            )
-            print("成功从本地加载处理器！")
-        except:
             print("正在下载处理器...")
             processor = AutoProcessor.from_pretrained(
-                model_id,
+                "openai/whisper-small",
                 local_files_only=False,
-                mirror='https://hf-mirror.com'
+                mirror='https://hf-mirror.com',
+                trust_remote_code=True
             )
+            print("处理器下载完成！")
+        except Exception as e:
+            print("\n处理器下载失败，请检查网络连接")
+            print("详细错误信息：", str(e))
+            raise e
 
         pipe = pipeline(
             "automatic-speech-recognition",
@@ -154,23 +139,10 @@ def setup_whisper():
             torch_dtype=torch_dtype,
             device=device,
         )
-        print("模型加载成功！")
+        print("初始化完成！")
         return pipe
     except Exception as e:
-        print(f"模型加载失败: {str(e)}")
-        print("\n请尝试以下解决方案:")
-        print("1. 检查网络连接")
-        print("2. 确保有足够的磁盘空间")
-        print("3. 您可以手动下载模型文件:")
-        print("   访问: https://hf-mirror.com/openai/whisper-small")
-        print("   需要下载的文件:")
-        print("   - config.json")
-        print("   - generation_config.json")
-        print("   - model.safetensors")
-        print("   - tokenizer.json")
-        print("   - vocab.json")
-        print("   下载后放在 models/openai/whisper-small 目录下")
-        print("4. 如果还是不行，可以尝试使用代理或者更换网络")
+        print("\n程序初始化失败，请检查网络连接后重试")
         raise e
 
 def setup_directories_and_logging():
