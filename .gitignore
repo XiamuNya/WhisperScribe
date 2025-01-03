@@ -24,6 +24,7 @@ wheels/
 # 项目特定
 log/
 result/
+models/
 *.wav
 *.mp3
 *.ogg
