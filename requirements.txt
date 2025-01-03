@@ -1,0 +1,14 @@
+# 使用清华镜像源安装：
+# pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+gradio>=4.0.0
+torch
+transformers
+datasets
+accelerate
+soundfile
+librosa
+opencc-python-reimplemented
+jieba
+pydub
+ffmpeg-python 
